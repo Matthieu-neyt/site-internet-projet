@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PixelForge — Composants PC (site fictif)</title>
+<style>
+  :root{--bg:#0f1220;--card:#1a1f35;--accent:#4f8cff;--accent2:#7c5cff;--text:#e8ebf5;--muted:#9aa3c0;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+  a{color:inherit;text-decoration:none}
+  header{position:sticky;top:0;z-index:10;background:rgba(15,18,32,.95);border-bottom:1px solid #262c48;
+    display:flex;align-items:center;justify-content:space-between;padding:14px 5%}
+  .logo{font-size:1.5rem;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  nav a{margin:0 12px;color:var(--muted)} nav a:hover{color:var(--text)}
+  .cart-btn{background:var(--accent);border:none;color:#fff;padding:9px 16px;border-radius:8px;cursor:pointer;font-weight:600}
+  .hero{text-align:center;padding:80px 5%;background:radial-gradient(circle at top,#26306b,var(--bg) 70%)}
+  .hero h1{font-size:2.6rem;margin-bottom:12px}
+  .hero p{color:var(--muted);max-width:600px;margin:0 auto 24px}
+  .hero .cta{display:inline-block;background:linear-gradient(90deg,var(--accent),var(--accent2));padding:12px 28px;border-radius:30px;font-weight:700}
+  section{padding:50px 5%}
+  h2{margin-bottom:20px}
+  .toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:25px}
+  .toolbar input,.toolbar select{background:var(--card);border:1px solid #2c3356;color:var(--text);padding:10px 14px;border-radius:8px}
+  .toolbar input{flex:1;min-width:200px}
+  .filters button{background:var(--card);border:1px solid #2c3356;color:var(--muted);padding:8px 14px;border-radius:20px;cursor:pointer;margin:0 6px 6px 0}
+  .filters button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:20px}
+  .card{background:var(--card);border-radius:14px;padding:18px;display:flex;flex-direction:column;transition:.2s;border:1px solid #262c48}
+  .card:hover{transform:translateY(-4px);border-color:var(--accent)}
+  .icon{font-size:3rem;text-align:center;background:#232a4a;border-radius:10px;padding:20px;margin-bottom:12px}
+  .cat{font-size:.75rem;color:var(--accent);text-transform:uppercase;letter-spacing:1px}
+  .card h3{font-size:1.05rem;margin:4px 0}
+  .card p{color:var(--muted);font-size:.85rem;flex:1}
+  .price{font-size:1.3rem;font-weight:700;margin:10px 0}
+  .card button{background:var(--accent);border:none;color:#fff;padding:10px;border-radius:8px;cursor:pointer;font-weight:600}
+  .card button:hover{background:var(--accent2)}
+  .features{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;text-align:center}
+  .features div{background:var(--card);padding:25px;border-radius:14px}
+  .features span{font-size:2rem}
+  /* Panier */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:20}
+  .drawer{position:fixed;top:0;right:-420px;width:400px;max-width:100%;height:100%;background:var(--card);z-index:30;
+    padding:24px;transition:right .3s;display:flex;flex-direction:column}
+  .drawer.open{right:0} .overlay.open{display:block}
+  .items{flex:1;overflow-y:auto;margin:16px 0}
+  .item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #2c3356;gap:8px}
+  .item small{color:var(--muted)}
+  .qty button{background:#2c3356;border:none;color:#fff;width:26px;height:26px;border-radius:6px;cursor:pointer}
+  .total{font-size:1.2rem;font-weight:700;margin-bottom:12px}
+  .checkout{background:linear-gradient(90deg,var(--accent),var(--accent2));border:none;color:#fff;padding:12px;border-radius:8px;font-weight:700;cursor:pointer}
+  .close{background:none;border:none;color:var(--muted);font-size:1.5rem;cursor:pointer;float:right}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--accent);padding:10px 20px;border-radius:8px;opacity:0;transition:.3s;z-index:40}
+  .toast.show{opacity:1}
+  form{display:grid;gap:12px;max-width:500px}
+  form input,form textarea{background:var(--card);border:1px solid #2c3356;color:var(--text);padding:12px;border-radius:8px;font-family:inherit}
+  footer{text-align:center;padding:30px;color:var(--muted);border-top:1px solid #262c48;font-size:.9rem}
+  @media(max-width:700px){nav{display:none}.hero h1{font-size:1.8rem}}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="#" class="logo">⚡ PixelForge</a>
+  <nav>
+    <a href="#produits">Produits</a>
+    <a href="#avantages">Avantages</a>
+    <a href="#contact">Contact</a>
+  </nav>
+  <button class="cart-btn" onclick="toggleCart()">🛒 Panier (<span id="count">0</span>)</button>
+</header>
+
+<div class="hero">
+  <h1>Montez le PC de vos rêves</h1>
+  <p>Processeurs, cartes graphiques, mémoire, stockage… Tous les composants pour gamers et créateurs, au meilleur prix.</p>
+  <a href="#produits" class="cta">Voir les produits</a>
+</div>
+
+<section id="produits">
+  <h2>Nos composants</h2>
+  <div class="toolbar">
+    <input type="text" id="search" placeholder="🔍 Rechercher un composant..." oninput="render()">
+    <select id="sort" onchange="render()">
+      <option value="default">Trier par</option>
+      <option value="asc">Prix croissant</option>
+      <option value="desc">Prix décroissant</option>
+      <option value="name">Nom (A-Z)</option>
+    </select>
+  </div>
+  <div class="filters" id="filters"></div>
+  <div class="grid" id="grid"></div>
+</section>
+
+<section id="avantages">
+  <h2>Pourquoi PixelForge ?</h2>
+  <div class="features">
+    <div><span>🚚</span><h3>Livraison 48h</h3><p>Gratuite dès 100 €</p></div>
+    <div><span>🛡️</span><h3>Garantie 2 ans</h3><p>Sur tous les produits</p></div>
+    <div><span>💬</span><h3>Support expert</h3><p>Conseils pour votre config</p></div>
+    <div><span>🔄</span><h3>Retour 30 jours</h3><p>Satisfait ou remboursé</p></div>
+  </div>
+</section>
+
+<section id="contact">
+  <h2>Contact</h2>
+  <form onsubmit="event.preventDefault();showToast('Message envoyé (fictif) ✔');this.reset();">
+    <input type="text" placeholder="Votre nom" required>
+    <input type="email" placeholder="Votre email" required>
+    <textarea rows="4" placeholder="Votre message" required></textarea>
+    <button class="checkout" type="submit">Envoyer</button>
+  </form>
+</section>
+
+<footer>© 2026 PixelForge — Site fictif réalisé à des fins de démonstration. Aucune vente réelle.</footer>
+
+<!-- Panier -->
+<div class="overlay" id="overlay" onclick="toggleCart()"></div>
+<div class="drawer" id="drawer">
+  <div><button class="close" onclick="toggleCart()">✕</button><h2>Votre panier</h2></div>
+  <div class="items" id="items"></div>
+  <div class="total">Total : <span id="total">0,00 €</span></div>
+  <button class="checkout" onclick="checkout()">Commander</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const products = [
+  {id:1, name:"Ryzen 7 7800X3D", cat:"Processeur", icon:"🧠", price:399.99, desc:"8 cœurs / 16 threads, idéal pour le gaming."},
+  {id:2, name:"Core i5-14600K", cat:"Processeur", icon:"🧠", price:299.90, desc:"14 cœurs, excellent rapport qualité/prix."},
+  {id:3, name:"GeForce RTX 4070 Super", cat:"Carte graphique", icon:"🎮", price:629.00, desc:"12 Go GDDR6X, ray tracing et DLSS 3."},
+  {id:4, name:"Radeon RX 7800 XT", cat:"Carte graphique", icon:"🎮", price:519.00, desc:"16 Go GDDR6, parfaite en 1440p."},
+  {id:5, name:"Corsair Vengeance 32 Go DDR5", cat:"Mémoire RAM", icon:"💾", price:119.90, desc:"2x16 Go, 6000 MHz CL30."},
+  {id:6, name:"G.Skill Trident Z5 RGB 64 Go", cat:"Mémoire RAM", icon:"💾", price:229.00, desc:"2x32 Go DDR5 6400 MHz avec RGB."},
+  {id:7, name:"Samsung 990 Pro 2 To", cat:"Stockage", icon:"💽", price:179.99, desc:"SSD NVMe PCIe 4.0, jusqu'à 7450 Mo/s."},
+  {id:8, name:"Seagate Barracuda 4 To", cat:"Stockage", icon:"💽", price:89.90, desc:"Disque dur 3,5\" 5400 tr/min."},
+  {id:9, name:"ASUS ROG Strix B650-A", cat:"Carte mère", icon:"🔌", price:249.00, desc:"AM5, DDR5, Wi-Fi 6E, PCIe 5.0."},
+  {id:10, name:"MSI MAG Z790 Tomahawk", cat:"Carte mère", icon:"🔌", price:279.00, desc:"LGA1700, DDR5, 2.5G LAN."},
+  {id:11, name:"Corsair RM850e", cat:"Alimentation", icon:"🔋", price:129.90, desc:"850 W, 80+ Gold, entièrement modulaire."},
+  {id:12, name:"NZXT H7 Flow", cat:"Boîtier", icon:"🖥️", price:139.00, desc:"Moyen tour, excellent flux d'air."},
+  {id:13, name:"Noctua NH-D15", cat:"Refroidissement", icon:"❄️", price:109.90, desc:"Ventirad double tour ultra silencieux."},
+  {id:14, name:"Arctic Liquid Freezer III 360", cat:"Refroidissement", icon:"❄️", price:119.00, desc:"Watercooling AIO 360 mm."}
+];
+
+let cart = JSON.parse(localStorage.getItem("pf_cart") || "[]");
+let activeCat = "Tous";
+const fmt = n => n.toFixed(2).replace(".", ",") + " €";
+
+function renderFilters(){
+  const cats = ["Tous", ...new Set(products.map(p => p.cat))];
+  document.getElementById("filters").innerHTML = cats.map(c =>
+    `<button class="${c===activeCat?'active':''}" onclick="setCat('${c}')">${c}</button>`).join("");
+}
+function setCat(c){ activeCat = c; renderFilters(); render(); }
+
+function render(){
+  const q = document.getElementById("search").value.toLowerCase();
+  const sort = document.getElementById("sort").value;
+  let list = products.filter(p =>
+    (activeCat==="Tous" || p.cat===activeCat) &&
+    (p.name.toLowerCase().includes(q) || p.cat.toLowerCase().includes(q)));
+  if(sort==="asc") list.sort((a,b)=>a.price-b.price);
+  if(sort==="desc") list.sort((a,b)=>b.price-a.price);
+  if(sort==="name") list.sort((a,b)=>a.name.localeCompare(b.name));
+  document.getElementById("grid").innerHTML = list.length ? list.map(p => `
+    <div class="card">
+      <div class="icon">${p.icon}</div>
+      <span class="cat">${p.cat}</span>
+      <h3>${p.name}</h3>
+      <p>${p.desc}</p>
+      <div class="price">${fmt(p.price)}</div>
+      <button onclick="addToCart(${p.id})">Ajouter au panier</button>
+    </div>`).join("") : "<p>Aucun produit trouvé.</p>";
+}
+
+function save(){ localStorage.setItem("pf_cart", JSON.stringify(cart)); updateCart(); }
+function addToCart(id){
+  const it = cart.find(i => i.id===id);
+  it ? it.qty++ : cart.push({id, qty:1});
+  save(); showToast("Ajouté au panier ✔");
+}
+function changeQty(id, d){
+  const it = cart.find(i => i.id===id);
+  it.qty += d;
+  if(it.qty<=0) cart = cart.filter(i => i.id!==id);
+  save();
+}
+function updateCart(){
+  let total = 0, count = 0;
+  document.getElementById("items").innerHTML = cart.length ? cart.map(i => {
+    const p = products.find(x => x.id===i.id);
+    total += p.price*i.qty; count += i.qty;
+    return `<div class="item">
+      <div><strong>${p.name}</strong><br><small>${fmt(p.price)}</small></div>
+      <div class="qty"><button onclick="changeQty(${i.id},-1)">−</button> ${i.qty}
+      <button onclick="changeQty(${i.id},1)">+</button></div></div>`;
+  }).join("") : "<p style='color:#9aa3c0'>Votre panier est vide.</p>";
+  document.getElementById("total").textContent = fmt(total);
+  document.getElementById("count").textContent = count;
+}
+function toggleCart(){
+  document.getElementById("drawer").classList.toggle("open");
+  document.getElementById("overlay").classList.toggle("open");
+}
+function checkout(){
+  if(!cart.length) return showToast("Votre panier est vide");
+  cart = []; save(); toggleCart();
+  showToast("Commande validée (fictive) 🎉 Merci !");
+}
+function showToast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2000);
+}
+
+renderFilters(); render(); updateCart();
+</script>
+</body>
+</html>
